@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function
 
 import datetime
 import math
+import os
 import re
 import time
 from xml.etree.ElementTree import Element
@@ -302,7 +303,9 @@ class EC2State(MachineState, nixopsaws.resources.ec2_common.EC2CommonState):
             self._session = nixopsaws.ec2_utils.session(**{
                 "region_name": self.region,
                 "profile_name": self.profile,
-                "aws_access_key_id": self.access_key_id
+                "aws_access_key_id": self.access_key_id,
+                "aws_secret_access_key": os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                "aws_session_token": os.environ.get('AWS_SESSION_TOKEN')
             })
 
         return self._session
