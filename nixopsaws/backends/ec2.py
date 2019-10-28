@@ -303,7 +303,7 @@ class EC2State(MachineState, nixopsaws.resources.ec2_common.EC2CommonState):
             self._session = nixopsaws.ec2_utils.session(**{
                 "region_name": self.region,
                 "profile_name": self.profile,
-                "aws_access_key_id": self.access_key_id,
+                "aws_access_key_id": os.environ.get('AWS_ACCESS_KEY_ID'),
                 "aws_secret_access_key": os.environ.get('AWS_SECRET_ACCESS_KEY'),
                 "aws_session_token": os.environ.get('AWS_SESSION_TOKEN')
             })
