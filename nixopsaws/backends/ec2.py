@@ -651,7 +651,7 @@ class EC2State(MachineState, nixopsaws.resources.ec2_common.EC2CommonState):
         self.log_start("\ndebug: {0}".format(volume.state))
 
         # If volume is not in attached state, wait for it before going on.
-        if volume.state != "attached":
+        if volume.state != "in-use":
             nixops.util.check_wait(check_attached)
 
         # Wait until the device is visible in the instance.
