@@ -635,6 +635,7 @@ class EC2State(MachineState, nixopsaws.resources.ec2_common.EC2CommonState):
                 nixops.util.check_wait(check_available)
 
         self.log_start("attaching volume ‘{0}’ as ‘{1}’... ".format(volume_id, device_real))
+        self.log_start("debug: {0} {1}".format(self.vm_id, volume.attachments[0]['InstanceId']))
 
         if len(volume.attachments) == 0 or self.vm_id != volume.attachments[0]['InstanceId']:
             # Attach it.
