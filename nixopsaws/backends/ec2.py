@@ -636,7 +636,7 @@ class EC2State(MachineState, nixopsaws.resources.ec2_common.EC2CommonState):
 
         self.log_start("attaching volume ‘{0}’ as ‘{1}’... ".format(volume_id, device_real))
 
-        if self.vm_id != volume.attachments[0]['InstanceId']:
+        if len(volume.attachments) == 0 or self.vm_id != volume.attachments[0]['InstanceId']:
             # Attach it.
             device_that_boto_expects = device_name_to_boto_expected(device_stored)
             volume.attach_to_instance(InstanceId=self.vm_id, Device=device_that_boto_expects)
