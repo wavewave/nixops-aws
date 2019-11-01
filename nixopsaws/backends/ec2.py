@@ -648,7 +648,7 @@ class EC2State(MachineState, nixopsaws.resources.ec2_common.EC2CommonState):
             self.log_continue("[{0}] ".format(res or "not-attached"))
             return res == 'attached'
 
-        self.log_start("\ndebug: {0} {1}".format(volume.state))
+        self.log_start("\ndebug: {0}".format(volume.state))
 
         # If volume is not in attached state, wait for it before going on.
         if volume.state != "attached":
