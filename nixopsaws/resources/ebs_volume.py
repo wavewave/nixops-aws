@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import
 
+import os
+
 import boto3
 import botocore.exceptions
 import nixops.resources
@@ -33,7 +35,9 @@ class EBSVolumeState(ec2_common.EC2CommonState, nixops.resources.ResourceState):
 
     state = nixops.util.attr_property("state", nixops.resources.ResourceState.MISSING, int)
     profile = nixops.util.attr_property("ec2.profile", None)
-    access_key_id = nixops.util.attr_property("ec2.accessKeyId", None)
+    access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    session_token = os.environ.get('AWS_SESSION_TOKEN')
     region = nixops.util.attr_property("ec2.region", None)
     zone = nixops.util.attr_property("ec2.zone", None)
     volume_id = nixops.util.attr_property("ec2.volumeId", None)
@@ -70,28 +74,20 @@ class EBSVolumeState(ec2_common.EC2CommonState, nixops.resources.ResourceState):
         # type: () -> boto3.Session
 
         if self._session is None:
-            self._session = boto3.session.Session(
+            self._session = nixopsaws.ec2_utils.session(
                 region_name=self.region,
                 profile_name=self.profile,
-                aws_access_key_id=self.access_key_id
+                aws_access_key_id=self.access_key_id,
+                aws_secret_access_key= self.aws_secret_access_key,
+                aws_session_token=self.session_token
             )
 
         return self._session
 
-    def connect(self, region):
-        if self._conn: return self._conn
-        self._conn = nixopsaws.ec2_utils.connect(region, self.access_key_id)
-        return self._conn
-
-    def connect_boto3(self, region):
-        if self._conn_boto3: return self._conn_boto3
-        self._conn_boto3 = nixopsaws.ec2_utils.connect_ec2_boto3(region, self.access_key_id)
-        return self._conn_boto3
-
     def _get_vol(self, config):
-        self.connect_boto3(config['region'])
+        self.session()
         try:
-            _vol = self._conn_boto3.describe_volumes(
+            _vol = self._session.describe_volumes(
                     VolumeIds=[config['volumeId']]
                    )['Volumes'][0]
         except botocore.exceptions.ClientError as error:
@@ -115,7 +111,7 @@ class EBSVolumeState(ec2_common.EC2CommonState, nixops.resources.ResourceState):
         if not self.access_key_id:
             raise Exception("please set ‘accessKeyId’, $EC2_ACCESS_KEY or $AWS_ACCESS_KEY_ID")
 
-        self.connect(defn.config['region'])
+        self.session()
 
         if self._exists():
             if self.region != defn.config['region'] or self.zone != defn.config['zone']:
@@ -136,7 +132,7 @@ class EBSVolumeState(ec2_common.EC2CommonState, nixops.resources.ResourceState):
                 self._get_vol(defn.config)
             else:
                 if defn.config['size'] == 0 and defn.config['snapshot'] != "":
-                    snapshots = self._conn.get_all_snapshots(snapshot_ids=[defn.config['snapshot']])
+                    snapshots = self._session.get_all_snapshots(snapshot_ids=[defn.config['snapshot']])
                     assert len(snapshots) == 1
                     defn.config['size'] = snapshots[0].volume_size
 
@@ -148,9 +144,21 @@ class EBSVolumeState(ec2_common.EC2CommonState, nixops.resources.ResourceState):
                 if defn.config['zone'] is None:
                     raise Exception("please set a zone where the volume will be created")
 
-                volume = self._conn.create_volume(
-                    zone=defn.config['zone'], size=defn.config['size'], snapshot=defn.config['snapshot'],
-                    iops=defn.config['iops'], volume_type=defn.config['volumeType'])
+                if defn.config['iops'] is not None:
+                    iops = { "Iops": defn.config['iops'] }
+                else:
+                    iops = {}
+
+                params = {
+                    "AvailabilityZone": defn.config['zone'],
+                    "Size": defn.config['size'],
+                    "SnapshotId": defn.config['snapshot'],
+                    "VolumeType": defn.config['volumeType']
+                }
+
+                params.update(iops)
+
+                volume = self._session.resource('ec2').create_volume(**params)
                 # FIXME: if we crash before the next step, we forget the
                 # volume we just created.  Doesn't seem to be anything we
                 # can do about this.
@@ -169,12 +177,13 @@ class EBSVolumeState(ec2_common.EC2CommonState, nixops.resources.ResourceState):
         if self.state == self.STARTING or check:
             self.update_tags(self.session(), self.volume_id, user_tags=defn.config['tags'], check=check)
             nixopsaws.ec2_utils.wait_for_volume_available(
-                self._conn, self.volume_id, self.logger,
+                self._session, self.volume_id, self.logger,
                 states=['available', 'in-use'])
             self.state = self.UP
 
     def check(self):
-        volume = nixopsaws.ec2_utils.get_volume_by_id(self.connect(self.region), self.volume_id)
+        self.session()
+        volume = nixopsaws.ec2_utils.get_volume_by_id(self._session, self.volume_id)
         if volume is None:
             self.state = self.MISSING
 
@@ -184,8 +193,8 @@ class EBSVolumeState(ec2_common.EC2CommonState, nixops.resources.ResourceState):
         if wipe:
             log.warn("wipe is not supported")
 
-        self.connect(self.region)
-        volume = nixopsaws.ec2_utils.get_volume_by_id(self._conn, self.volume_id, allow_missing=True)
+        self.session()
+        volume = nixopsaws.ec2_utils.get_volume_by_id(self._session, self.volume_id, allow_missing=True)
         if not volume: return True
         if not self.depl.logger.confirm("are you sure you want to destroy EBS volume ‘{0}’?".format(self.name)): return False
         self.log("destroying EBS volume ‘{0}’...".format(self.volume_id))
