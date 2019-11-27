@@ -1,4 +1,5 @@
 import boto3
+import nixops.util
 import nixopsaws.ec2_utils
 
 class EFSCommonState():
