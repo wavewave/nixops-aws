@@ -39,7 +39,7 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
     state = nixops.util.attr_property("state", nixops.resources.ResourceState.MISSING, int)
     access_key_id = nixops.util.attr_property("ec2.accessKeyId", None)
     region = nixops.util.attr_property("ec2.region", None)
-    fs_id = nixops.util.attr_property("ec2.fsId", None)
+    fs_id = nixops.util.attr_property("ec2.fsId", "") # None
     creation_token = nixops.util.attr_property("ec2.creationToken", None)
 
     @classmethod
@@ -85,6 +85,7 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
 
             while True:
                 fss = client.describe_file_systems(CreationToken=self.creation_token)["FileSystems"]
+                print fss
                 assert(len(fss) <= 1)
 
                 if len(fss) == 1:
