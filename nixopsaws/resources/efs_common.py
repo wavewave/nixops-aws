@@ -23,10 +23,10 @@ class EFSCommonState():
                 "aws_session_token": os.environ.get('AWS_SESSION_TOKEN')
             })
 
-        self._client = self._session.client('efs',
-                           region_name=region or self.region,
-                           aws_access_key_id=access_key_id,
-                           aws_secret_access_key=secret_access_key
-                       )
+        self._client = self._session.client('efs')
+                  #         region_name=region or self.region,
+                  #         aws_access_key_id=access_key_id,
+                  #         aws_secret_access_key=secret_access_key
+                  #     )
 
         return self._client
