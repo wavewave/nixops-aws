@@ -1,4 +1,5 @@
 import boto3
+import os
 import nixops.util
 import nixopsaws.ec2_utils
 
