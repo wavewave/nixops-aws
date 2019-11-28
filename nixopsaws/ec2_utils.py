@@ -108,7 +108,7 @@ def connect_ec2_boto3(region, profile, access_key_id):
         client = boto3.session.Session(region_name=region, profile_name=profile)
     return client
 
-def connect_vpc(region, profile = None, access_key_id):
+def connect_vpc(region, profile, access_key_id):
     """Connect to the specified VPC region using the given access key."""
     assert region
     (access_key_id, secret_access_key) = fetch_aws_secret_key(access_key_id)
