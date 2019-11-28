@@ -16,7 +16,7 @@ class EFSCommonState():
         if not self._session:
             self._session = nixopsaws.ec2_utils.session(**{
                 "region_name": self.region,
-                "profile_name": self.profile,
+                "profile_name": profile,
                 "aws_access_key_id": access_key_id,
                 "aws_secret_access_key": secret_access_key,
                 "aws_session_token": os.environ.get('AWS_SESSION_TOKEN')

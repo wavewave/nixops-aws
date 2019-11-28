@@ -72,7 +72,9 @@ class ElasticFileSystemMountTargetState(nixops.resources.ResourceState, efs_comm
 
         access_key_id = defn.config["accessKeyId"] or nixopsaws.ec2_utils.get_access_key_id()
         region = defn.config["region"]
-        client = self._get_client(access_key_id, region)
+        profile = defn.config["profile"] or None
+
+        client = self._get_client(access_key_id, region, profile)
 
         if self.state == self.MISSING:
 

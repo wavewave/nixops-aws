@@ -64,7 +64,7 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
     def create(self, defn, check, allow_reboot, allow_recreate):
 
         access_key_id = defn.config["accessKeyId"] or nixopsaws.ec2_utils.get_access_key_id()
-        profile = nixops.util.attr_property("ec2.profile", None)
+        profile = defn.config["profile"] or None
 
         client = self._get_client(access_key_id, defn.config["region"], profile)
 
