@@ -98,7 +98,7 @@ class ElasticFileSystemMountTargetState(nixops.resources.ResourceState, efs_comm
                 args["IpAddress"] = defn.config["ipAddress"]
 
             subnetId = defn.config["subnet"]
-            securityGroups = self.security_groups_to_ids(region, access_key_id, subnetId, defn.config["securityGroups"] )
+            securityGroups = self.security_groups_to_ids(region, profile, access_key_id, subnetId, defn.config["securityGroups"] )
             res = client.create_mount_target(FileSystemId=fs_id, SubnetId=subnetId, SecurityGroups=securityGroups, **args)
 
             with self.depl._db:
@@ -170,9 +170,9 @@ class ElasticFileSystemMountTargetState(nixops.resources.ResourceState, efs_comm
 
         return True
 
-    def security_groups_to_ids(self, region, access_key_id, subnetId, groups):
-        conn = nixopsaws.ec2_utils.connect(region, access_key_id)
-        conn_vpc = nixopsaws.ec2_utils.connect_vpc(region, access_key_id)
+    def security_groups_to_ids(self, region, profile, access_key_id, subnetId, groups):
+        conn = nixopsaws.ec2_utils.connect(region, profile, access_key_id)
+        conn_vpc = nixopsaws.ec2_utils.connect_vpc(region, profile, access_key_id)
 
         sg_names = filter(lambda g: not g.startswith('sg-'), groups)
         if sg_names != [ ] and subnetId != "":
