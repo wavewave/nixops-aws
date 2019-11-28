@@ -69,6 +69,7 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
         client = self._get_client(access_key_id, defn.config["region"], profile)
 
         print "create is called"
+        print self.state
         if self.state == self.MISSING:
 
             self.log_start("creating Elastic File System...")
