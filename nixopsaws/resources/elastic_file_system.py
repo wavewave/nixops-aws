@@ -39,7 +39,7 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
     state = nixops.util.attr_property("state", nixops.resources.ResourceState.MISSING, int)
     access_key_id = nixops.util.attr_property("ec2.accessKeyId", None)
     region = nixops.util.attr_property("ec2.region", None)
-    fs_id = nixops.util.attr_property("ec2.fsId", "") # None
+    fs_id = nixops.util.attr_property("ec2.fsId", None)
     creation_token = nixops.util.attr_property("ec2.creationToken", None)
 
     @classmethod
@@ -64,9 +64,11 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
     def create(self, defn, check, allow_reboot, allow_recreate):
 
         access_key_id = defn.config["accessKeyId"] or nixopsaws.ec2_utils.get_access_key_id()
+        profile = nixops.util.attr_property("ec2.profile", None)
 
-        client = self._get_client(access_key_id, defn.config["region"])
+        client = self._get_client(access_key_id, defn.config["region"], profile)
 
+        print "create is called"
         if self.state == self.MISSING:
 
             self.log_start("creating Elastic File System...")
@@ -108,7 +110,7 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
 
         def tag_updater(tags):
             # FIXME: handle removing tags.
-            print self.fs_id
+            print ("self.fs_id: {0}".format(self.fs_id))
             client.create_tags(FileSystemId=self.fs_id, Tags=[{"Key": k, "Value": tags[k]} for k in tags])
 
         self.update_tags_using(tag_updater, user_tags=defn.config["tags"], check=check)

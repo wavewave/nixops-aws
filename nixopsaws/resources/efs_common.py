@@ -7,7 +7,6 @@ class EFSCommonState():
 
     _client = None
     _session = None
-    profile = nixops.util.attr_property("ec2.profile", None)
 
     def _get_client(self, access_key_id=None, region=None, profile=None):
         if self._client: return self._client
