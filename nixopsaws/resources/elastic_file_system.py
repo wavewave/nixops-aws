@@ -70,7 +70,7 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
 
         print "create is called"
         print self.state
-        if self.state == self.MISSING:
+        if self.state == self.MISSING or self.state == self.STARTING:
 
             self.log_start("creating Elastic File System...")
 
