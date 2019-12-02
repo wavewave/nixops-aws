@@ -11,7 +11,13 @@ with lib;
       description = "AWS region.";
     };
 
+    profile = mkOption {
+      type = types.str;
+      description = "Name of the profile.";
+    };
+
     accessKeyId = mkOption {
+      default = "";
       type = types.str;
       description = "The AWS Access Key ID.";
     };

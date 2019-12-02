@@ -64,10 +64,11 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
     def create(self, defn, check, allow_reboot, allow_recreate):
 
         access_key_id = defn.config["accessKeyId"] or nixopsaws.ec2_utils.get_access_key_id()
+        profile = defn.config["profile"] or None
 
-        client = self._get_client(access_key_id, defn.config["region"])
+        client = self._get_client(access_key_id, defn.config["region"], profile)
 
-        if self.state == self.MISSING:
+        if self.state == self.MISSING or self.state == self.STARTING:
 
             self.log_start("creating Elastic File System...")
 
