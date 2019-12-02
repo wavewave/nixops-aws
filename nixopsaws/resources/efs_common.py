@@ -23,9 +23,5 @@ class EFSCommonState():
             })
 
         self._client = self._session.client('efs')
-                  #         region_name=region or self.region,
-                  #         aws_access_key_id=access_key_id,
-                  #         aws_secret_access_key=secret_access_key
-                  #     )
 
         return self._client

@@ -108,7 +108,6 @@ class ElasticFileSystemState(ec2_common.EC2CommonState,
 
         def tag_updater(tags):
             # FIXME: handle removing tags.
-            print ("self.fs_id: {0}".format(self.fs_id))
             client.create_tags(FileSystemId=self.fs_id, Tags=[{"Key": k, "Value": tags[k]} for k in tags])
 
         self.update_tags_using(tag_updater, user_tags=defn.config["tags"], check=check)
