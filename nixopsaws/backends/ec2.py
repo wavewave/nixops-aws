@@ -1023,7 +1023,7 @@ class EC2State(MachineState, nixopsaws.resources.ec2_common.EC2CommonState):
                         DeviceName=device_name_to_boto_expected(device_real),
                         VirtualName=v['disk']
                     )
-                    print ephemeral_mapping
+                    print(ephemeral_mapping)
                     args['BlockDeviceMappings'].append(ephemeral_mapping)
                     self.update_block_device_mapping(device_stored, v)
 
