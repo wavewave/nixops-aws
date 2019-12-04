@@ -434,6 +434,7 @@ class EC2State(MachineState, nixopsaws.resources.ec2_common.EC2CommonState):
         else:
             x[k] = v
         self.block_device_mapping = x
+        print (self.block_device_mapping)
 
     def get_backups(self):
         # type: () -> Dict[str, Dict[str, Any]]
